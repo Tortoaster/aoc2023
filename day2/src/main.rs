@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 fn main() {
-    let input = include_str!("../../inputs/input2ab");
+    let input = include_str!("../../inputs/input2");
 
     println!("Part One: {}", solve_2a(input));
     println!("Part Two: {}", solve_2b(input));

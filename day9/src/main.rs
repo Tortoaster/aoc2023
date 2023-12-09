@@ -1,21 +1,23 @@
 use std::str::FromStr;
 
 fn main() {
-    let input = include_str!("../../inputs/input9a");
+    let input = include_str!("../../inputs/input9");
 
     println!("Part One: {}", solve_9a(input));
     println!("Part Two: {}", solve_9b(input));
 }
 
 fn solve_9a(input: &str) -> i32 {
-    input.lines()
+    input
+        .lines()
         .map(|line| line.parse().unwrap())
         .map(|seq: Sequence| seq.extrapolate())
         .sum()
 }
 
 fn solve_9b(input: &str) -> i32 {
-    input.lines()
+    input
+        .lines()
         .map(|line| line.parse().unwrap())
         .map(|seq: Sequence| seq.extrapolate_before())
         .sum()
@@ -37,9 +39,7 @@ impl Sequence {
         for (index, n) in offset.iter_mut().enumerate() {
             *n -= self.numbers[index];
         }
-        Sequence {
-            numbers: offset
-        }
+        Sequence { numbers: offset }
     }
 
     pub fn extrapolate(&self) -> i32 {
@@ -81,7 +81,9 @@ impl Sequence {
             derivatives.pop();
             match derivatives.last() {
                 None => return extrapolated_value,
-                Some(last) => extrapolated_value = last.numbers.first().unwrap() - extrapolated_value,
+                Some(last) => {
+                    extrapolated_value = last.numbers.first().unwrap() - extrapolated_value
+                }
             }
         }
     }
@@ -99,10 +101,10 @@ impl FromStr for Sequence {
 
 #[cfg(test)]
 mod tests {
-    use crate::{solve_9a};
+    use crate::solve_9a;
 
     #[test]
-    fn test_1a() {
+    fn test_9a() {
         const INPUT: &str = "0 3 6 9 12 15
 1 3 6 10 15 21
 10 13 16 21 30 45";
