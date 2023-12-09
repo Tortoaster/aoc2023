@@ -1,5 +1,5 @@
 fn main() {
-    let input = include_str!("../../inputs/input1a");
+    let input = include_str!("../../inputs/input1ab");
 
     println!("Part One: {}", solve_1a(input));
     println!("Part Two: {}", solve_1b(input));
