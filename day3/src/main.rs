@@ -10,12 +10,14 @@ fn main() {
 fn solve_3a(input: &str) -> u32 {
     let lines: Vec<Line> = input.lines().map(|line| line.parse().unwrap()).collect();
     let mut part_numbers = Vec::new();
+
     for (index, line) in lines.iter().enumerate() {
         part_numbers.extend(line.get_part_numbers(
             index.checked_sub(1).and_then(|i| lines.get(i)).cloned(),
             lines.get(index + 1).cloned(),
         ));
     }
+
     part_numbers
         .into_iter()
         .map(|part_number| part_number.number)
@@ -23,7 +25,17 @@ fn solve_3a(input: &str) -> u32 {
 }
 
 fn solve_3b(input: &str) -> u32 {
-    todo!()
+    let lines: Vec<Line> = input.lines().map(|line| line.parse().unwrap()).collect();
+    let mut ratios = 0;
+
+    for (index, line) in lines.iter().enumerate() {
+        ratios += line.get_ratios(
+            index.checked_sub(1).and_then(|i| lines.get(i)).cloned(),
+            lines.get(index + 1).cloned(),
+        );
+    }
+
+    ratios
 }
 
 #[derive(Clone, Default)]
@@ -42,15 +54,33 @@ impl Line {
         symbols.extend(previous.unwrap_or_default().symbols);
         symbols.extend(next.unwrap_or_default().symbols);
         symbols.sort();
+
         self.part_numbers
             .iter()
             .copied()
             .filter(move |part_number| {
-                symbols.iter().any(|symbol| {
-                    part_number.index <= symbol.index + 1
-                        && part_number.index + part_number.width() > symbol.index - 1
-                })
+                symbols.iter().any(|symbol| symbol.adjacent_to(part_number))
             })
+    }
+
+    pub fn get_ratios(&self, previous: Option<Line>, next: Option<Line>) -> u32 {
+        let mut ratios = 0;
+
+        let mut numbers = self.part_numbers.clone();
+        numbers.extend(previous.unwrap_or_default().part_numbers);
+        numbers.extend(next.unwrap_or_default().part_numbers);
+        numbers.sort();
+
+        for symbol in &self.symbols {
+            if let SymbolType::Gear = symbol.ty {
+                let adjacent_numbers: Vec<_> = numbers.iter().filter(|n| symbol.adjacent_to(n)).collect();
+                if adjacent_numbers.len() == 2 {
+                    ratios += adjacent_numbers[0].number * adjacent_numbers[1].number;
+                }
+            }
+        }
+
+        ratios
     }
 }
 
@@ -68,7 +98,7 @@ impl FromStr for Line {
                     if c.is_ascii_digit() {
                         number = Some(c as u32 - 48);
                     } else if c != '.' {
-                        symbols.push(Symbol { index })
+                        symbols.push(Symbol { index, ty: SymbolType::from_char(c) })
                     }
                 }
                 Some(n) => {
@@ -81,7 +111,7 @@ impl FromStr for Line {
                         });
                         number = None;
                         if c != '.' {
-                            symbols.push(Symbol { index })
+                            symbols.push(Symbol { index, ty: SymbolType::from_char(c) })
                         }
                     }
                 }
@@ -93,7 +123,6 @@ impl FromStr for Line {
                 number: n,
                 index: s.len() - n.to_string().len(),
             });
-            number = None;
         }
 
         Ok(Line {
@@ -103,12 +132,36 @@ impl FromStr for Line {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd)]
 struct Symbol {
     index: usize,
+    ty: SymbolType
 }
 
-#[derive(Copy, Clone)]
+impl Symbol {
+    pub fn adjacent_to(&self, part_number: &PartNumber) -> bool {
+        part_number.index <= self.index + 1
+            && part_number.index + part_number.width() > self.index - 1
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd)]
+enum SymbolType {
+    Gear,
+    Whatever,
+}
+
+impl SymbolType {
+    pub fn from_char(c: char) -> Self {
+        if c == '*' {
+            SymbolType::Gear
+        } else {
+            SymbolType::Whatever
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 struct PartNumber {
     number: u32,
     index: usize,
