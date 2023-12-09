@@ -3,11 +3,11 @@ use std::str::FromStr;
 fn main() {
     let input = include_str!("../../inputs/input2ab");
 
-    println!("Part One: {}", solve_1a(input));
-    println!("Part Two: {}", solve_1b(input));
+    println!("Part One: {}", solve_2a(input));
+    println!("Part Two: {}", solve_2b(input));
 }
 
-fn solve_1a(input: &str) -> u32 {
+fn solve_2a(input: &str) -> u32 {
     input
         .lines()
         .map(|game| game.parse().unwrap())
@@ -15,7 +15,7 @@ fn solve_1a(input: &str) -> u32 {
         .sum()
 }
 
-fn solve_1b(input: &str) -> u32 {
+fn solve_2b(input: &str) -> u32 {
     input
         .lines()
         .map(|game| game.parse().unwrap())
