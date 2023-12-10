@@ -58,9 +58,7 @@ impl Line {
         self.part_numbers
             .iter()
             .copied()
-            .filter(move |part_number| {
-                symbols.iter().any(|symbol| symbol.adjacent_to(part_number))
-            })
+            .filter(move |part_number| symbols.iter().any(|symbol| symbol.adjacent_to(part_number)))
     }
 
     pub fn get_ratios(&self, previous: Option<Line>, next: Option<Line>) -> u32 {
@@ -73,7 +71,8 @@ impl Line {
 
         for symbol in &self.symbols {
             if let SymbolType::Gear = symbol.ty {
-                let adjacent_numbers: Vec<_> = numbers.iter().filter(|n| symbol.adjacent_to(n)).collect();
+                let adjacent_numbers: Vec<_> =
+                    numbers.iter().filter(|n| symbol.adjacent_to(n)).collect();
                 if adjacent_numbers.len() == 2 {
                     ratios += adjacent_numbers[0].number * adjacent_numbers[1].number;
                 }
@@ -98,7 +97,10 @@ impl FromStr for Line {
                     if c.is_ascii_digit() {
                         number = Some(c as u32 - 48);
                     } else if c != '.' {
-                        symbols.push(Symbol { index, ty: SymbolType::from_char(c) })
+                        symbols.push(Symbol {
+                            index,
+                            ty: SymbolType::from_char(c),
+                        })
                     }
                 }
                 Some(n) => {
@@ -111,7 +113,10 @@ impl FromStr for Line {
                         });
                         number = None;
                         if c != '.' {
-                            symbols.push(Symbol { index, ty: SymbolType::from_char(c) })
+                            symbols.push(Symbol {
+                                index,
+                                ty: SymbolType::from_char(c),
+                            })
                         }
                     }
                 }
@@ -135,7 +140,7 @@ impl FromStr for Line {
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd)]
 struct Symbol {
     index: usize,
-    ty: SymbolType
+    ty: SymbolType,
 }
 
 impl Symbol {

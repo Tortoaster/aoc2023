@@ -9,7 +9,11 @@ fn main() {
 }
 
 fn solve_4a(input: &str) -> u32 {
-    input.lines().map(|line| line.parse().unwrap()).map(|card: Card| card.points()).sum()
+    input
+        .lines()
+        .map(|line| line.parse().unwrap())
+        .map(|card: Card| card.points())
+        .sum()
 }
 
 fn solve_4b(input: &str) -> u32 {
@@ -25,7 +29,13 @@ pub struct Card {
 impl Card {
     pub fn points(&self) -> u32 {
         let winning: BTreeSet<_> = self.winning.numbers.iter().copied().collect();
-        let common: usize = self.our.numbers.iter().copied().filter(|n| winning.contains(n)).count();
+        let common: usize = self
+            .our
+            .numbers
+            .iter()
+            .copied()
+            .filter(|n| winning.contains(n))
+            .count();
         if common == 0 {
             0
         } else {
@@ -45,19 +55,21 @@ impl FromStr for Card {
         Ok(Card {
             number: number.parse().unwrap(),
             winning: winning.parse().unwrap(),
-            our: our.parse().unwrap()
+            our: our.parse().unwrap(),
         })
     }
 }
 
 pub struct Numbers {
-    numbers: Vec<u32>
+    numbers: Vec<u32>,
 }
 
 impl FromStr for Numbers {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Numbers { numbers: s.split_whitespace().map(|n| n.parse().unwrap()).collect() })
+        Ok(Numbers {
+            numbers: s.split_whitespace().map(|n| n.parse().unwrap()).collect(),
+        })
     }
 }

@@ -1,3 +1,5 @@
+use itertools::Itertools;
+use std::collections::{BTreeMap, BTreeSet};
 use std::str::FromStr;
 
 fn main() {
@@ -12,35 +14,111 @@ fn solve_10a(input: &str) -> u32 {
 }
 
 fn solve_10b(input: &str) -> u32 {
-    todo!()
+    let mut maze = Maze::from_str(input).unwrap();
+    maze.solve();
+    let mut path = maze.path.clone();
+    path.sort_by(|pos1, pos2| pos1.row.cmp(&pos2.row));
+    let xs: BTreeMap<isize, BTreeSet<isize>> = path
+        .into_iter()
+        .group_by(|pos| pos.row)
+        .into_iter()
+        .map(|(row, cols)| (row, cols.map(|pos| pos.col).collect()))
+        .collect();
+    let mut total = 0;
+
+    for row in 0..maze.height as isize {
+        let mut in_ring = false;
+        let xs = xs.get(&row).cloned().unwrap_or_default();
+        let clean_pipes: Vec<_> = maze.pipes[row as usize]
+            .iter()
+            .copied()
+            .enumerate()
+            .map(|(index, pipe)| match xs.get(&(index as isize)) {
+                None => Pipe::None,
+                Some(_) => pipe,
+            })
+            .collect();
+        let mut previous = None;
+        for pipe in clean_pipes {
+            match pipe {
+                Pipe::UpDown => in_ring = !in_ring,
+                Pipe::LeftRight => (),
+                Pipe::None => {
+                    if in_ring {
+                        total += 1;
+                    }
+                }
+                Pipe::Start => unreachable!(),
+                pipe => match previous {
+                    None => previous = Some(pipe),
+                    Some(opener) => {
+                        previous = None;
+                        if pipe
+                            .directions()
+                            .unwrap()
+                            .into_iter()
+                            .filter(Direction::is_vertical)
+                            .next()
+                            .unwrap()
+                            != opener
+                                .directions()
+                                .unwrap()
+                                .into_iter()
+                                .filter(Direction::is_vertical)
+                                .next()
+                                .unwrap()
+                        {
+                            in_ring = !in_ring;
+                        }
+                    }
+                },
+            }
+        }
+    }
+
+    total
 }
 
 struct Maze {
     pipes: Vec<Vec<Pipe>>,
-    width: usize,
     height: usize,
     start: Pos,
+    path: Vec<Pos>,
 }
 
 impl Maze {
-    fn solve(&self) -> u32 {
+    fn solve(&mut self) -> u32 {
         for assumption in Pipe::ALL {
             let mut length = 0;
             let mut current_pos = self.start;
+            self.path.push(current_pos);
             let mut last_direction = assumption.directions().unwrap()[0];
 
             current_pos = current_pos.move_in(last_direction);
+            self.path.push(current_pos);
             length += 1;
 
             loop {
                 match self.get(current_pos) {
-                    None | Some(Pipe::None) => break,
-                    Some(Pipe::Start) => return length / 2,
+                    None | Some(Pipe::None) => {
+                        self.path.clear();
+                        break;
+                    }
+                    Some(Pipe::Start) => {
+                        *self.get_mut(self.start).unwrap() = assumption;
+                        return length / 2;
+                    }
                     Some(current) => {
-                        let directions: Vec<_> = current.directions().unwrap().into_iter().filter(|dir| *dir != last_direction.opposite()).collect();
+                        let directions: Vec<_> = current
+                            .directions()
+                            .unwrap()
+                            .into_iter()
+                            .filter(|dir| *dir != last_direction.opposite())
+                            .collect();
                         if directions.len() == 1 {
                             last_direction = directions[0];
                             current_pos = current_pos.move_in(last_direction);
+                            self.path.push(current_pos);
                             length += 1;
                         }
                     }
@@ -58,6 +136,14 @@ impl Maze {
             Some(self.pipes[pos.row as usize][pos.col as usize])
         }
     }
+
+    fn get_mut(&mut self, pos: Pos) -> Option<&mut Pipe> {
+        if pos.row < 0 || pos.col < 0 {
+            None
+        } else {
+            Some(&mut self.pipes[pos.row as usize][pos.col as usize])
+        }
+    }
 }
 
 impl FromStr for Maze {
@@ -73,7 +159,10 @@ impl FromStr for Maze {
             for (col, c) in line.chars().enumerate() {
                 let pipe = Pipe::from_char(c);
                 if pipe == Pipe::Start {
-                    start = Some(Pos { row: row as isize, col: col as isize });
+                    start = Some(Pos {
+                        row: row as isize,
+                        col: col as isize,
+                    });
                 }
                 current_row.push(pipe);
             }
@@ -81,14 +170,13 @@ impl FromStr for Maze {
             pipes.push(current_row);
         }
 
-        let width = pipes[0].len();
         let height = pipes.len();
 
         Ok(Maze {
             pipes,
-            width,
             height,
             start: start.unwrap(),
+            path: Vec::new(),
         })
     }
 }
@@ -158,6 +246,13 @@ impl Direction {
             Direction::Left => Direction::Right,
         }
     }
+
+    fn is_vertical(&self) -> bool {
+        match self {
+            Direction::Up | Direction::Down => true,
+            Direction::Right | Direction::Left => false,
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -186,5 +281,25 @@ impl Pos {
                 col: self.col - 1,
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::solve_10b;
+
+    #[test]
+    fn test_10b() {
+        const INPUT: &str = "...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........";
+
+        assert_eq!(solve_10b(INPUT), 4)
     }
 }
