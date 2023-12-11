@@ -1,5 +1,4 @@
-use std::collections::BTreeSet;
-use std::str::FromStr;
+use std::{collections::BTreeSet, str::FromStr};
 
 fn main() {
     let input = include_str!("../../inputs/input4");
@@ -17,7 +16,22 @@ fn solve_4a(input: &str) -> u32 {
 }
 
 fn solve_4b(input: &str) -> u32 {
-    todo!()
+    let mut multipliers: Vec<_> = input.lines().map(|_| 1).collect();
+
+    for (index, card) in input
+        .lines()
+        .map(|line| Card::from_str(line).unwrap())
+        .enumerate()
+    {
+        for i in 0..card.common() {
+            let this_multiplier = multipliers[index];
+            if let Some(multiplier) = multipliers.get_mut(index + 1 + i as usize) {
+                *multiplier += this_multiplier;
+            };
+        }
+    }
+
+    multipliers.into_iter().sum()
 }
 
 pub struct Card {
@@ -28,19 +42,21 @@ pub struct Card {
 
 impl Card {
     pub fn points(&self) -> u32 {
+        match self.common() {
+            0 => 0,
+            n => 2_u32.pow(n - 1),
+        }
+    }
+
+    pub fn common(&self) -> u32 {
         let winning: BTreeSet<_> = self.winning.numbers.iter().copied().collect();
-        let common: usize = self
-            .our
+
+        self.our
             .numbers
             .iter()
             .copied()
             .filter(|n| winning.contains(n))
-            .count();
-        if common == 0 {
-            0
-        } else {
-            2_u32.pow(common as u32 - 1)
-        }
+            .count() as u32
     }
 }
 
