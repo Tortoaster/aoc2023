@@ -28,7 +28,7 @@ fn solve_8a(input: &str) -> u32 {
     }
 }
 
-fn solve_8b(input: &str) -> u32 {
+fn solve_8b(input: &str) -> u128 {
     let input = Input::from_str(input);
 
     let mut current: Vec<_> = input
@@ -37,25 +37,33 @@ fn solve_8b(input: &str) -> u32 {
         .filter_map(|(name, location)| name.ends_with('A').then_some(location))
         .collect();
     let mut step_index = 0;
-    let mut steps = 1;
+    let mut steps = current.iter().map(|_| 0).collect::<Vec<_>>();
+    let mut done = current.iter().map(|_| false).collect::<Vec<_>>();
 
-    loop {
+    while !done.iter().all(|done| *done) {
         let direction = input.directions[step_index];
         let new_locations: Vec<_> = current
             .iter()
             .map(|location| location.locations[&direction])
             .collect();
 
-        if new_locations.iter().all(|name| name.ends_with('Z')) {
-            return steps;
+        for (index, name) in new_locations.iter().enumerate() {
+            if !done[index] {
+                steps[index] += 1;
+            }
+            if name.ends_with('Z') {
+                done[index] = true;
+            }
         }
 
         for (index, location) in current.iter_mut().enumerate() {
             *location = &input.locations[new_locations[index]];
         }
         step_index = (step_index + 1) % input.directions.len();
-        steps += 1;
     }
+
+    // Wrong answer, just put all numbers in a lcm calculator
+    dbg!(steps).iter().product()
 }
 
 struct Input<'a> {
