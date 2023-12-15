@@ -88,8 +88,6 @@ impl FromStr for Input {
 
 struct Map {
     rearrangers: Vec<Rearranger>,
-    source: String,
-    destination: String,
 }
 
 impl Map {
@@ -113,19 +111,14 @@ impl FromStr for Map {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (ty, s) = s.split_once(' ').unwrap();
-        let (source, destination) = ty.split_once("-to-").unwrap();
+        let (_, s) = s.split_once(' ').unwrap();
         let s = s.strip_prefix("map:\n").unwrap();
         let rearrangers = s
             .split('\n')
             .map(|line| Rearranger::from_str(line).unwrap())
             .collect();
 
-        Ok(Map {
-            rearrangers,
-            source: source.to_owned(),
-            destination: destination.to_owned(),
-        })
+        Ok(Map { rearrangers })
     }
 }
 

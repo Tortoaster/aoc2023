@@ -35,7 +35,6 @@ fn solve_4b(input: &str) -> u32 {
 }
 
 pub struct Card {
-    number: u32,
     winning: Numbers,
     our: Numbers,
 }
@@ -65,11 +64,10 @@ impl FromStr for Card {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.strip_prefix("Card").unwrap().trim();
-        let (number, s) = s.split_once(": ").unwrap();
+        let (_, s) = s.split_once(": ").unwrap();
         let (winning, our) = s.split_once(" | ").unwrap();
 
         Ok(Card {
-            number: number.parse().unwrap(),
             winning: winning.parse().unwrap(),
             our: our.parse().unwrap(),
         })

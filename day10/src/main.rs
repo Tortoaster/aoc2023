@@ -1,6 +1,9 @@
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    str::FromStr,
+};
+
 use itertools::Itertools;
-use std::collections::{BTreeMap, BTreeSet};
-use std::str::FromStr;
 
 fn main() {
     let input = include_str!("../../inputs/input10");
