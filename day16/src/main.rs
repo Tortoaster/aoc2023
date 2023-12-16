@@ -19,57 +19,28 @@ fn solve_16a(input: &str) -> u32 {
 fn solve_16b(input: &str) -> u32 {
     let input = input.parse::<Contraption>().unwrap();
 
-    let mut max = (0..input.height)
+    (0..input.height)
         .into_par_iter()
-        .map(|row| {
+        .flat_map(|row| {
+            vec![
+                ((row, 0), Direction::Right),
+                ((row, input.width - 1), Direction::Left),
+            ]
+        })
+        .chain((0..input.width).into_par_iter().flat_map(|col| {
+            vec![
+                ((0, col), Direction::Down),
+                ((input.height - 1, col), Direction::Up),
+            ]
+        }))
+        .map(|((row, col), dir)| {
             let mut input = input.clone();
-            input.beams[row][0].insert(Direction::Right);
+            input.beams[row][col].insert(dir);
             input.simulate();
             input.energized()
         })
         .max()
-        .unwrap();
-
-    max = max.max(
-        (0..input.height)
-            .into_par_iter()
-            .map(|row| {
-                let mut input = input.clone();
-                input.beams[row][input.width - 1].insert(Direction::Left);
-                input.simulate();
-                input.energized()
-            })
-            .max()
-            .unwrap(),
-    );
-
-    max = max.max(
-        (0..input.width)
-            .into_par_iter()
-            .map(|col| {
-                let mut input = input.clone();
-                input.beams[0][col].insert(Direction::Down);
-                input.simulate();
-                input.energized()
-            })
-            .max()
-            .unwrap(),
-    );
-
-    max = max.max(
-        (0..input.width)
-            .into_par_iter()
-            .map(|col| {
-                let mut input = input.clone();
-                input.beams[input.height - 1][col].insert(Direction::Up);
-                input.simulate();
-                input.energized()
-            })
-            .max()
-            .unwrap(),
-    );
-
-    max
+        .unwrap()
 }
 
 #[derive(Clone)]
@@ -171,7 +142,7 @@ impl FromStr for Contraption {
         let width = tiles[0].len();
         let height = tiles.len();
 
-        let mut beams = vec![vec![BTreeSet::new(); width]; height];
+        let beams = vec![vec![BTreeSet::new(); width]; height];
 
         Ok(Self {
             tiles,
@@ -272,6 +243,6 @@ mod tests {
 
     #[test]
     fn test_16b() {
-        assert_eq!(solve_16b(INPUT), todo!())
+        assert_eq!(solve_16b(INPUT), 51)
     }
 }

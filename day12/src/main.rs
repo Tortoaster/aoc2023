@@ -298,6 +298,7 @@ mod tests {
 
     #[test]
     fn test_12b() {
+        panic!("way too slow");
         assert_eq!(solve_12b(INPUT), 21)
     }
 }
