@@ -281,7 +281,7 @@ impl From<char> for Spring {
 
 #[cfg(test)]
 mod tests {
-    use crate::{solve_12a, solve_12b};
+    use crate::solve_12a;
 
     const INPUT: &str = "???.### 1,1,3
 .??..??...?##. 1,1,3
@@ -299,6 +299,6 @@ mod tests {
     #[test]
     fn test_12b() {
         panic!("way too slow");
-        assert_eq!(solve_12b(INPUT), 21)
+        // assert_eq!(solve_12b(INPUT), 21)
     }
 }

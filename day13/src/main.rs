@@ -89,10 +89,9 @@ impl Pattern {
                             // Ignore the first pair of tiles that is not equal
                             || (!smudge_cleaned).then(|| smudge_cleaned = true).is_some()
                     })
-            }) {
-                if smudge_cleaned {
-                    return Some(next_row);
-                }
+            }) && smudge_cleaned
+            {
+                return Some(next_row);
             }
             smudge_cleaned = false;
         }
@@ -112,10 +111,9 @@ impl Pattern {
                         // Ignore the first pair of tiles that is not equal
                         || (!smudge_cleaned).then(|| smudge_cleaned = true).is_some()
                 })
-            }) {
-                if smudge_cleaned {
-                    return Some(next_col);
-                }
+            }) && smudge_cleaned
+            {
+                return Some(next_col);
             }
             smudge_cleaned = false;
         }

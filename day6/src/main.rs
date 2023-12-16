@@ -67,7 +67,6 @@ fn parse(s: &str) -> impl Iterator<Item = (u32, u32)> + '_ {
         .unwrap()
         .strip_prefix("Time: ")
         .unwrap()
-        .trim()
         .split_whitespace()
         .map(|s| s.parse().unwrap());
 
@@ -76,7 +75,6 @@ fn parse(s: &str) -> impl Iterator<Item = (u32, u32)> + '_ {
         .unwrap()
         .strip_prefix("Distance: ")
         .unwrap()
-        .trim()
         .split_whitespace()
         .map(|s| s.parse().unwrap());
 

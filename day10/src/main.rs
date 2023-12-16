@@ -60,15 +60,13 @@ fn solve_10b(input: &str) -> u32 {
                             .directions()
                             .unwrap()
                             .into_iter()
-                            .filter(Direction::is_vertical)
-                            .next()
+                            .find(Direction::is_vertical)
                             .unwrap()
                             != opener
                                 .directions()
                                 .unwrap()
                                 .into_iter()
-                                .filter(Direction::is_vertical)
-                                .next()
+                                .find(Direction::is_vertical)
                                 .unwrap()
                         {
                             in_ring = !in_ring;

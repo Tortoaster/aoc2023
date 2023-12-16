@@ -33,7 +33,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn validate(&self, red: u32, green: u32, blue: u32) -> Result<(), ()> {
+    pub fn validate(&self, red: u32, green: u32, blue: u32) -> Result<(), NoSolutions> {
         for grab in &self.grabs {
             grab.validate(red, green, blue)?;
         }
@@ -71,12 +71,12 @@ pub struct Grab {
 }
 
 impl Grab {
-    pub fn validate(&self, mut red: u32, mut green: u32, mut blue: u32) -> Result<(), ()> {
+    pub fn validate(&self, mut red: u32, mut green: u32, mut blue: u32) -> Result<(), NoSolutions> {
         for amount in &self.amounts {
             match amount.color {
-                Color::Red => red = red.checked_sub(amount.number).ok_or(())?,
-                Color::Green => green = green.checked_sub(amount.number).ok_or(())?,
-                Color::Blue => blue = blue.checked_sub(amount.number).ok_or(())?,
+                Color::Red => red = red.checked_sub(amount.number).ok_or(NoSolutions)?,
+                Color::Green => green = green.checked_sub(amount.number).ok_or(NoSolutions)?,
+                Color::Blue => blue = blue.checked_sub(amount.number).ok_or(NoSolutions)?,
             };
         }
 
@@ -140,3 +140,5 @@ impl FromStr for Color {
         }
     }
 }
+
+pub struct NoSolutions;

@@ -68,57 +68,56 @@ impl Contraption {
         let mut changed = false;
         let old = self.beams.clone();
 
-        for row in 0..self.height {
-            for col in 0..self.width {
-                for &beam in &old[row][col] {
-                    match self.tiles[row][col] {
-                        Tile::Space => {
+        for ((row, col), beams) in old.into_iter().enumerate().flat_map(|(row, beams)| {
+            beams
+                .into_iter()
+                .enumerate()
+                .map(move |(col, beam)| ((row, col), beam))
+        }) {
+            for &beam in &beams {
+                match self.tiles[row][col] {
+                    Tile::Space => {
+                        if let Some(pos) = beam.next_pos((row, col), self.width, self.height) {
+                            changed |= self.beams[pos.0][pos.1].insert(beam);
+                        }
+                    }
+                    Tile::UpMirror => {
+                        let beam = beam.mirror_up();
+                        if let Some(pos) = beam.next_pos((row, col), self.width, self.height) {
+                            changed |= self.beams[pos.0][pos.1].insert(beam);
+                        }
+                    }
+                    Tile::DownMirror => {
+                        let beam = beam.mirror_down();
+                        if let Some(pos) = beam.next_pos((row, col), self.width, self.height) {
+                            changed |= self.beams[pos.0][pos.1].insert(beam);
+                        }
+                    }
+                    Tile::HorizontalSplitter => {
+                        if beam.is_horizontal() {
                             if let Some(pos) = beam.next_pos((row, col), self.width, self.height) {
                                 changed |= self.beams[pos.0][pos.1].insert(beam);
                             }
+                        } else {
+                            if let Some(col) = col.checked_sub(1) {
+                                changed |= self.beams[row][col].insert(Direction::Left);
+                            }
+                            if let Some(col) = (col + 1 < self.width).then_some(col + 1) {
+                                changed |= self.beams[row][col].insert(Direction::Right);
+                            }
                         }
-                        Tile::UpMirror => {
-                            let beam = beam.mirror_up();
+                    }
+                    Tile::VerticalSplitter => {
+                        if beam.is_vertical() {
                             if let Some(pos) = beam.next_pos((row, col), self.width, self.height) {
                                 changed |= self.beams[pos.0][pos.1].insert(beam);
                             }
-                        }
-                        Tile::DownMirror => {
-                            let beam = beam.mirror_down();
-                            if let Some(pos) = beam.next_pos((row, col), self.width, self.height) {
-                                changed |= self.beams[pos.0][pos.1].insert(beam);
+                        } else {
+                            if let Some(row) = row.checked_sub(1) {
+                                changed |= self.beams[row][col].insert(Direction::Up);
                             }
-                        }
-                        Tile::HorizontalSplitter => {
-                            if beam.is_horizontal() {
-                                if let Some(pos) =
-                                    beam.next_pos((row, col), self.width, self.height)
-                                {
-                                    changed |= self.beams[pos.0][pos.1].insert(beam);
-                                }
-                            } else {
-                                if let Some(col) = col.checked_sub(1) {
-                                    changed |= self.beams[row][col].insert(Direction::Left);
-                                }
-                                if let Some(col) = (col + 1 < self.width).then_some(col + 1) {
-                                    changed |= self.beams[row][col].insert(Direction::Right);
-                                }
-                            }
-                        }
-                        Tile::VerticalSplitter => {
-                            if beam.is_vertical() {
-                                if let Some(pos) =
-                                    beam.next_pos((row, col), self.width, self.height)
-                                {
-                                    changed |= self.beams[pos.0][pos.1].insert(beam);
-                                }
-                            } else {
-                                if let Some(row) = row.checked_sub(1) {
-                                    changed |= self.beams[row][col].insert(Direction::Up);
-                                }
-                                if let Some(row) = (row + 1 < self.height).then_some(row + 1) {
-                                    changed |= self.beams[row][col].insert(Direction::Down);
-                                }
+                            if let Some(row) = (row + 1 < self.height).then_some(row + 1) {
+                                changed |= self.beams[row][col].insert(Direction::Down);
                             }
                         }
                     }
